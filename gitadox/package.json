@@ -2,6 +2,9 @@
   "name": "gitadox",
   "version": "1.0.0",
   "description": "AI-powered Git CLI with pretty output and full workflow automation.",
+  "bin": {
+    "gitadox": "./gitadox"
+  },
   "main": "index.js",
   "type": "module",
   "dependencies": {
