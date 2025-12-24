@@ -731,7 +731,15 @@ async function main() {
     return main();
   }
   async function initGitHubRepo() {
-    const { user, repo } = await inquirer.prompt([
+    const { token } = await inquirer.prompt([
+      {
+        type: 'password',
+        name: 'token',
+        message: 'Enter your GitHub Personal Access Token:',
+        mask: '*'
+      }
+    ]);
+    const { user, repo, visibility } = await inquirer.prompt([
       {
         type: 'input',
         name: 'user',
@@ -743,8 +751,46 @@ async function main() {
         name: 'repo',
         message: 'Repository name:',
         default: 'cli'
+      },
+      {
+        type: 'list',
+        name: 'visibility',
+        message: 'Repository visibility:',
+        choices: [
+          { name: 'Public', value: false },
+          { name: 'Private', value: true }
+        ],
+        default: false
       }
     ]);
+    // Create repo via GitHub API
+    let created = false;
+    try {
+      const res = await fetch(`https://api.github.com/user/repos`, {
+        method: 'POST',
+        headers: {
+          Authorization: `token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name: repo, private: visibility })
+      });
+      if (res.status === 201) {
+        console.log(chalk.green('GitHub repository created successfully!'));
+        created = true;
+      } else {
+        const err = await res.json();
+        if (err && err.message && err.message.includes('name already exists')) {
+          console.log(chalk.yellow('Repository already exists on GitHub. Proceeding...'));
+          created = true;
+        } else {
+          console.log(chalk.red('Failed to create repository:'), err.message || res.statusText);
+          return;
+        }
+      }
+    } catch (e) {
+      console.log(chalk.red('Error creating repository on GitHub:'), e.message);
+      return;
+    }
     const remote = `https://github.com/${user}/${repo}.git`;
     try {
       console.log(chalk.cyan(`Adding remote: ${remote}`));
