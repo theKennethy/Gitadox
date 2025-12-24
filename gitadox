@@ -398,6 +398,27 @@ async function save() {
 }
 
 async function main() {
+  // Load plugins
+  let pluginChoices = [];
+  let plugins = [];
+  try {
+    const fs = await import('fs');
+    const pathModule = await import('path');
+    const pluginsDir = pathModule.join(process.cwd(), 'gitadox-plugins');
+    if (fs.existsSync(pluginsDir)) {
+      const files = fs.readdirSync(pluginsDir).filter(f => f.endsWith('.js'));
+      for (const file of files) {
+        try {
+          const mod = await import(pathModule.join(pluginsDir, file));
+          if (mod.name && mod.handler) {
+            pluginChoices.push({ name: `[Plugin] ${mod.name}`, value: `plugin:${file}` });
+            plugins.push({ file, ...mod });
+          }
+        } catch {}
+      }
+    }
+  } catch {}
+
   let choices = [
     { name: 'Save (add, commit, pull, push)', value: 'save' },
     { name: 'Undo Last Action', value: 'undo' },
@@ -407,15 +428,102 @@ async function main() {
     { name: 'Branch', value: 'branch' },
     { name: 'Create Branch (AI-named)', value: 'ai-create-branch' },
     { name: 'Merge', value: 'merge' },
+    { name: 'Stash', value: 'stash' },
+    { name: 'Apply Stash', value: 'apply-stash' },
+    { name: 'Drop Stash', value: 'drop-stash' },
+    { name: 'List Stashes', value: 'list-stash' },
+    { name: 'Advanced Commands', value: 'advanced' },
     { name: 'Explain Diff (AI)', value: 'explain-diff' },
     { name: 'Conflict Resolution (AI)', value: 'conflict-resolution' },
     { name: 'Natural Language Command (AI)', value: 'nl-command' },
     { name: 'Explain Command/Error (AI)', value: 'explain-anything' },
     { name: 'Push', value: 'push' },
     { name: 'Pull', value: 'pull' },
+    ...pluginChoices,
     { name: 'Help', value: 'help' },
     { name: 'Exit', value: 'exit' }
   ];
+  // Stash support
+  async function stash() {
+    const res = run('git stash');
+    console.log(res);
+    // AI summary of stash
+    const prompt = `Explain in plain English what just happened with this git stash command and what the user should know next.\n\nOUTPUT:\n${res}`;
+    const aiRes = await fetch(OLLAMA_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: OLLAMA_MODEL, prompt })
+    });
+    const text = await aiRes.text();
+    let summary = '';
+    for (const line of text.split(/\r?\n/)) {
+      try {
+        if (!line.trim()) continue;
+        const obj = JSON.parse(line);
+        if (obj.response) summary += obj.response;
+      } catch {}
+    }
+    summary = summary.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+    if (summary) console.log('\nAI:', summary);
+  }
+  async function applyStash() {
+    const res = run('git stash apply');
+    console.log(res);
+    // AI summary of unstash
+    const prompt = `Explain in plain English what just happened with this git stash apply command and what the user should check for next.\n\nOUTPUT:\n${res}`;
+    const aiRes = await fetch(OLLAMA_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: OLLAMA_MODEL, prompt })
+    });
+    const text = await aiRes.text();
+    let summary = '';
+    for (const line of text.split(/\r?\n/)) {
+      try {
+        if (!line.trim()) continue;
+        const obj = JSON.parse(line);
+        if (obj.response) summary += obj.response;
+      } catch {}
+    }
+    summary = summary.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+    if (summary) console.log('\nAI:', summary);
+  }
+  async function dropStash() {
+    const res = run('git stash drop');
+    console.log(res);
+  }
+  async function listStash() {
+    const res = run('git stash list');
+    console.log(res);
+  }
+  async function advancedCommands() {
+    const { adv } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'adv',
+        message: 'Advanced Git Command:',
+        choices: [
+          { name: 'Cherry-pick', value: 'cherry-pick' },
+          { name: 'Rebase', value: 'rebase' },
+          { name: 'Tag', value: 'tag' },
+          { name: 'Cancel', value: 'cancel' }
+        ]
+      }
+    ]);
+    if (adv === 'cherry-pick') {
+      const { hash } = await inquirer.prompt([{ type: 'input', name: 'hash', message: 'Commit hash to cherry-pick:' }]);
+      const res = run(`git cherry-pick ${hash}`);
+      console.log(res);
+    } else if (adv === 'rebase') {
+      const { branch } = await inquirer.prompt([{ type: 'input', name: 'branch', message: 'Branch to rebase onto:' }]);
+      const res = run(`git rebase ${branch}`);
+      console.log(res);
+    } else if (adv === 'tag') {
+      const { tag } = await inquirer.prompt([{ type: 'input', name: 'tag', message: 'Tag name:' }]);
+      const res = run(`git tag ${tag}`);
+      console.log(res);
+    }
+  }
   // Remove duplicates and empty entries
   const seen = new Set();
   choices = choices.filter(c => {
@@ -448,6 +556,16 @@ async function main() {
     await aiCreateBranch();
   } else if (cmd === 'merge') {
     await aiMerge();
+  } else if (cmd === 'stash') {
+    await stash();
+  } else if (cmd === 'apply-stash') {
+    await applyStash();
+  } else if (cmd === 'drop-stash') {
+    await dropStash();
+  } else if (cmd === 'list-stash') {
+    await listStash();
+  } else if (cmd === 'advanced') {
+    await advancedCommands();
   } else if (cmd === 'explain-diff') {
     await aiExplainDiff();
   } else if (cmd === 'conflict-resolution') {
@@ -460,6 +578,10 @@ async function main() {
     await aiPush();
   } else if (cmd === 'pull') {
     await aiPull();
+  } else if (cmd && cmd.startsWith('plugin:')) {
+    const file = cmd.replace('plugin:', '');
+    const plugin = plugins.find(p => p.file === file);
+    if (plugin) await plugin.handler();
   } else if (cmd === 'help') {
     await help();
   } else if (cmd === 'exit') {
