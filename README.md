@@ -67,13 +67,36 @@ A beautiful, AI-powered Git CLI with Ollama integration for commit messages, sum
 
 ## Competitor Comparison
 
-| Tool             | AI Features         | Usability                | Extensibility         | Advanced Git Support      | Unique Differentiators                |
-|------------------|--------------------|--------------------------|-----------------------|--------------------------|---------------------------------------|
-| **Gitadox**      | Yes (Ollama, all major actions, commit, stash, merge, etc.) | High (AI prompts, guided menu, Undo/Redo, no infinite scroll) | High (plugin system, JS plugins) | Good (core + advanced via menu, AI explanations) | AI-driven, plugin support, Undo/Redo, modern menu |
-| GitHub CLI (gh)  | No                 | High (GitHub-focused, intuitive commands) | Moderate (extensions/plugins) | Good (esp. for GitHub workflows)      | Deep GitHub integration, PR/issues   |
-| Lazygit          | No                 | Very High (TUI, keyboard-driven, fast) | Low (configurable, not extensible) | Good (visualizes branches, stashes)   | Fast TUI, real-time status, easy undo|
-| GitUI            | No                 | High (TUI, mouse/keyboard, clean UI) | Low (configurable, not extensible) | Good (interactive rebase, stash, etc.)| Clean UI, performance, cross-platform|
-| Standard Git CLI | No                 | Moderate (powerful, steep learning curve) | High (scripts, aliases, hooks) | Excellent (full git feature set)      | Ubiquitous, scriptable, most control |
+
+| Feature                        | Gitadox (Yours)         | GitHub CLI (gh)      | Lazygit            | GitUI              | Standard Git CLI   |
+|--------------------------------|-------------------------|----------------------|--------------------|--------------------|--------------------|
+| AI-powered commit messages      | Yes (Ollama)            | No                   | No                 | No                 | No                 |
+| AI explanations/summaries       | Yes (all major actions) | No                   | No                 | No                 | No                 |
+| Guided merge conflict (AI)      | Yes                     | No                   | Partial (manual)   | Partial (manual)   | Manual             |
+| Undo/Redo for actions           | Yes (commit/branch)     | No                   | No                 | No                 | No (manual only)   |
+| Plugin/extensibility system     | Yes (JS plugins)        | Moderate (extensions)| No                 | No                 | Yes (scripts/hooks)|
+| Scripting support               | Yes (scripts folder)    | No                   | No                 | No                 | Yes (scripts/hooks)|
+| Modern menu UI (no wrap)        | Yes                     | No                   | Yes (TUI)          | Yes (TUI)          | No                 |
+| Stash support                   | Yes + AI                | Yes                  | Yes                | Yes                | Yes                |
+| Advanced git commands           | Yes + AI                | Yes                  | Yes                | Yes                | Yes                |
+| GitHub integration (PR/issues)  | Yes                     | Yes                  | No                 | No                 | No                 |
+| GitHub repo creation            | Yes                     | Yes                  | No                 | No                 | No                 |
+| Public/private repo creation    | Yes                     | Yes                  | No                 | No                 | No                 |
+| Multi-repo management           | Yes (batch ops)         | No                   | No                 | No                 | No                 |
+| Check for updates               | Yes (menu)              | No                   | No                 | No                 | No                 |
+| Cross-platform                  | Yes                     | Yes                  | Yes                | Yes                | Yes                |
+| Easy install                    | Yes                     | Yes                  | Yes                | Yes                | Yes                |
+| Community/support               | New                     | Large                | Growing            | Growing            | Large              |
+| TUI/visual workflow             | No (menu)               | No                   | Yes                | Yes                | No                 |
+| Scripting/automation            | Yes (scripts/plugins)   | Yes                  | No                 | No                 | Yes                |
+
+**Where Gitadox stands out:**
+- AI-powered explanations, commit messages, and automation
+- Undo/Redo for common git actions
+- Plugin/extensibility system and scripting
+- Multi-repo management with batch operations
+- Modern, user-friendly CLI menu (no infinite scroll)
+- Built-in update checker
 
 **Where Gitadox stands out:**
 - AI-powered explanations, commit messages, and automation

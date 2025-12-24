@@ -800,13 +800,65 @@ async function main() {
           { name: 'List Repos', value: 'list' },
           { name: 'Add Repo', value: 'add' },
           { name: 'Remove Repo', value: 'remove' },
+          { name: 'Auto-Import Repos', value: 'autoimport' },
           { name: 'Batch Status', value: 'status' },
           { name: 'Batch Pull', value: 'pull' },
           { name: 'Batch Push', value: 'push' },
           { name: 'Back', value: 'back' }
-        ]
+        ],
+        pageSize: 10
       }
     ]);
+        if (action === 'autoimport') {
+          const { parentDir } = await inquirer.prompt([
+            { type: 'input', name: 'parentDir', message: 'Enter parent directory to scan for git repos:' }
+          ]);
+          if (!parentDir) return;
+          const absParent = pathModule.isAbsolute(parentDir) ? parentDir : pathModule.resolve(process.cwd(), parentDir);
+          if (!fs.existsSync(absParent) || !fs.statSync(absParent).isDirectory()) {
+            console.log(chalk.red('Directory does not exist.'));
+            return;
+          }
+          // Recursively find all .git folders, skip hidden/system folders, handle errors
+          function findGitRepos(dir) {
+            let results = [];
+            let entries;
+            try {
+              entries = fs.readdirSync(dir, { withFileTypes: true });
+            } catch (e) {
+              return results; // skip unreadable dirs
+            }
+            for (const entry of entries) {
+              // Skip hidden/system folders (., .., .git, node_modules, etc)
+              if (entry.name.startsWith('.') && entry.name !== '.git') continue;
+              if (entry.name === 'node_modules' || entry.name === 'vendor' || entry.name === '__pycache__') continue;
+              const fullPath = pathModule.join(dir, entry.name);
+              if (entry.isDirectory()) {
+                if (fs.existsSync(pathModule.join(fullPath, '.git'))) {
+                  results.push(fullPath);
+                  continue; // do not recurse into git repos
+                }
+                results = results.concat(findGitRepos(fullPath));
+              }
+            }
+            return results;
+          }
+          const foundRepos = findGitRepos(absParent);
+          let added = 0;
+          for (const repoPath of foundRepos) {
+            if (!repos.includes(repoPath)) {
+              repos.push(repoPath);
+              added++;
+            }
+          }
+          fs.writeFileSync(configPath, JSON.stringify(repos, null, 2));
+          if (added) {
+            console.log(chalk.green(`Imported ${added} repos from ${absParent}`));
+          } else {
+            console.log(chalk.yellow('No new repos found to import.'));
+          }
+          return;
+        }
     if (action === 'list') {
       if (!repos.length) return console.log(chalk.yellow('No repos managed yet.'));
       repos.forEach((r, i) => console.log(`${i + 1}. ${r}`));
@@ -814,19 +866,40 @@ async function main() {
       const { repoPath } = await inquirer.prompt([
         { type: 'input', name: 'repoPath', message: 'Path to repo to add:' }
       ]);
-      if (repoPath && !repos.includes(repoPath)) {
-        repos.push(repoPath);
-        fs.writeFileSync(configPath, JSON.stringify(repos, null, 2));
-        console.log(chalk.green('Repo added.'));
+      if (!repoPath) return;
+      // Convert to absolute path
+      const absPath = pathModule.isAbsolute(repoPath) ? repoPath : pathModule.resolve(process.cwd(), repoPath);
+      // Check if path exists and is a git repo
+      if (!fs.existsSync(absPath)) {
+        console.log(chalk.red('Path does not exist.'));
+        return;
       }
+      if (!fs.existsSync(pathModule.join(absPath, '.git'))) {
+        console.log(chalk.red('Not a git repository (no .git folder).'));
+        return;
+      }
+      if (repos.includes(absPath)) {
+        console.log(chalk.yellow('Repo already managed.'));
+        return;
+      }
+      repos.push(absPath);
+      fs.writeFileSync(configPath, JSON.stringify(repos, null, 2));
+      console.log(chalk.green('Repo added: ' + absPath));
     } else if (action === 'remove') {
       if (!repos.length) return console.log(chalk.yellow('No repos to remove.'));
       const { toRemove } = await inquirer.prompt([
-        { type: 'list', name: 'toRemove', message: 'Select repo to remove:', choices: repos }
+        { type: 'list', name: 'toRemove', message: 'Select repo to remove:', choices: repos, pageSize: 10 }
       ]);
-      repos = repos.filter(r => r !== toRemove);
+      // Always use absolute paths for removal
+      const absPath = pathModule.isAbsolute(toRemove) ? toRemove : pathModule.resolve(process.cwd(), toRemove);
+      const before = repos.length;
+      repos = repos.filter(r => r !== absPath);
       fs.writeFileSync(configPath, JSON.stringify(repos, null, 2));
-      console.log(chalk.green('Repo removed.'));
+      if (repos.length < before) {
+        console.log(chalk.green('Repo removed: ' + absPath));
+      } else {
+        console.log(chalk.red('Repo not found in managed list.'));
+      }
     } else if (action === 'status') {
       if (!repos.length) return console.log(chalk.yellow('No repos to check.'));
       for (const repo of repos) {
