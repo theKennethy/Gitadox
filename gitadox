@@ -532,6 +532,7 @@ async function main() {
     { name: 'Drop Stash', value: 'drop-stash' },
     { name: 'List Stashes', value: 'list-stash' },
     { name: 'Advanced Commands', value: 'advanced' },
+    { name: 'Check for Updates', value: 'check-updates' },
     { name: 'Multi-Repo Management', value: 'multi-repo' },
     { name: 'Initialize GitHub Repo', value: 'init-github' },
     { name: 'GitHub Integration', value: 'github' },
@@ -744,6 +745,37 @@ async function main() {
   if (cmd === 'github') {
     await githubMenu();
     return main();
+  }
+  if (cmd === 'check-updates') {
+    await checkForUpdates();
+    return main();
+  }
+  async function checkForUpdates() {
+    const fs = await import('fs');
+    const pathModule = await import('path');
+    const pkgPath = pathModule.join(process.cwd(), 'package.json');
+    let currentVersion = null;
+    if (fs.existsSync(pkgPath)) {
+      try {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+        currentVersion = pkg.version;
+      } catch {}
+    }
+    if (!currentVersion) {
+      console.log(chalk.red('Could not determine current version.'));
+      return;
+    }
+    console.log(chalk.cyan('Checking for updates on npm...'));
+    try {
+      const latest = run('npm view gitadox version');
+      if (latest && latest !== currentVersion) {
+        console.log(boxen(chalk.yellow(`Update available! Current: ${currentVersion}, Latest: ${latest}\nRun: npm install -g gitadox`), {padding: 1, borderColor: 'yellow'}));
+      } else {
+        console.log(boxen(chalk.green('You are using the latest version.'), {padding: 1, borderColor: 'green'}));
+      }
+    } catch (e) {
+      console.log(chalk.red('Failed to check for updates.'), e.message);
+    }
   }
   if (cmd === 'multi-repo') {
     await multiRepoMenu();
