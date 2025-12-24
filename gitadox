@@ -346,7 +346,7 @@ async function save() {
 }
 
 async function main() {
-  const choices = [
+  let choices = [
     { name: 'Save (add, commit, pull, push)', value: 'save' },
     { name: 'Status', value: 'status' },
     { name: 'Log', value: 'log' },
@@ -362,6 +362,13 @@ async function main() {
     { name: 'Help', value: 'help' },
     { name: 'Exit', value: 'exit' }
   ];
+  // Remove duplicates and empty entries
+  const seen = new Set();
+  choices = choices.filter(c => {
+    if (!c || !c.value || seen.has(c.value)) return false;
+    seen.add(c.value);
+    return true;
+  });
   const { cmd } = await inquirer.prompt([
     {
       type: 'no-wrap-list',
