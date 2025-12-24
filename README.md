@@ -177,4 +177,33 @@ MIT
 
 ---
 
+## Scripts vs Plugins
+
+**Scripts** (in the `scripts/` folder) are for quick, user-defined automation or macros. Each script is a JS file exporting a `name` and a `run` function. Use scripts for simple, personal tasks or to automate repetitive actions. Scripts appear in the menu as `[Script]` entries.
+
+**Plugins** (in `gitadox-plugins/`) are for advanced, reusable, or shareable CLI extensions. Each plugin exports a `name`, `description`, and a `handler` function. Plugins can add new menu actions and interact more deeply with the CLI. Use plugins for features you want to share or reuse across projects. Plugins appear in the menu as `[Plugin]` entries.
+
+**Summary:**
+- Use scripts for quick, personal automation.
+- Use plugins for advanced, reusable, or shareable CLI extensions.
+
+**Example script (`scripts/hello.js`):**
+```js
+export const name = 'Hello Script';
+export async function run() {
+  console.log('Hello from your custom script!');
+}
+```
+
+**Example plugin (`gitadox-plugins/sample.js`):**
+```js
+export const name = 'My Plugin';
+export const description = 'Does something cool!';
+export async function handler() {
+  console.log('Hello from My Plugin!');
+}
+```
+
+---
+
 *Made with ❤️ by theKennethy and GitHub Copilot*
