@@ -1,0 +1,13 @@
+{
+  "name": "gitadox",
+  "version": "1.0.0",
+  "description": "AI-powered Git CLI with pretty output and full workflow automation.",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "boxen": "^7.1.1",
+    "chalk": "^5.3.0",
+    "inquirer": "^9.2.7",
+    "node-fetch": "^3.3.2"
+  }
+}
