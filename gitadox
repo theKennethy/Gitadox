@@ -491,10 +491,46 @@ async function main() {
   async function dropStash() {
     const res = run('git stash drop');
     console.log(res);
+    // AI summary of drop stash
+    const prompt = `Explain in plain English what just happened with this git stash drop command and what the user should know next.\n\nOUTPUT:\n${res}`;
+    const aiRes = await fetch(OLLAMA_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: OLLAMA_MODEL, prompt })
+    });
+    const text = await aiRes.text();
+    let summary = '';
+    for (const line of text.split(/\r?\n/)) {
+      try {
+        if (!line.trim()) continue;
+        const obj = JSON.parse(line);
+        if (obj.response) summary += obj.response;
+      } catch {}
+    }
+    summary = summary.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+    if (summary) console.log('\nAI:', summary);
   }
   async function listStash() {
     const res = run('git stash list');
     console.log(res);
+    // AI summary of list stash
+    const prompt = `Explain in plain English what this git stash list output means and how to interpret the stashes.\n\nOUTPUT:\n${res}`;
+    const aiRes = await fetch(OLLAMA_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: OLLAMA_MODEL, prompt })
+    });
+    const text = await aiRes.text();
+    let summary = '';
+    for (const line of text.split(/\r?\n/)) {
+      try {
+        if (!line.trim()) continue;
+        const obj = JSON.parse(line);
+        if (obj.response) summary += obj.response;
+      } catch {}
+    }
+    summary = summary.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+    if (summary) console.log('\nAI:', summary);
   }
   async function advancedCommands() {
     const { adv } = await inquirer.prompt([
