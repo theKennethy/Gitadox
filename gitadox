@@ -483,9 +483,12 @@ async function main() {
   // Load plugins
   let pluginChoices = [];
   let plugins = [];
+  let scriptChoices = [];
+  let scripts = [];
   try {
     const fs = await import('fs');
     const pathModule = await import('path');
+    // Plugins
     const pluginsDir = pathModule.join(process.cwd(), 'gitadox-plugins');
     if (fs.existsSync(pluginsDir)) {
       const files = fs.readdirSync(pluginsDir).filter(f => f.endsWith('.js'));
@@ -495,6 +498,20 @@ async function main() {
           if (mod.name && mod.handler) {
             pluginChoices.push({ name: `[Plugin] ${mod.name}`, value: `plugin:${file}` });
             plugins.push({ file, ...mod });
+          }
+        } catch {}
+      }
+    }
+    // Scripts
+    const scriptsDir = pathModule.join(process.cwd(), 'scripts');
+    if (fs.existsSync(scriptsDir)) {
+      const files = fs.readdirSync(scriptsDir).filter(f => f.endsWith('.js'));
+      for (const file of files) {
+        try {
+          const mod = await import(pathModule.join(scriptsDir, file));
+          if (mod.name && mod.run) {
+            scriptChoices.push({ name: `[Script] ${mod.name}`, value: `script:${file}` });
+            scripts.push({ file, ...mod });
           }
         } catch {}
       }
@@ -524,6 +541,7 @@ async function main() {
     { name: 'Push', value: 'push' },
     { name: 'Pull', value: 'pull' },
     ...pluginChoices,
+    ...scriptChoices,
     { name: 'Help', value: 'help' },
     { name: 'Exit', value: 'exit' }
   ];
@@ -919,6 +937,10 @@ async function main() {
     const file = cmd.replace('plugin:', '');
     const plugin = plugins.find(p => p.file === file);
     if (plugin) await plugin.handler();
+  } else if (cmd && cmd.startsWith('script:')) {
+    const file = cmd.replace('script:', '');
+    const script = scripts.find(s => s.file === file);
+    if (script) await script.run();
   } else if (cmd === 'help') {
     await help();
   } else if (cmd === 'exit') {
