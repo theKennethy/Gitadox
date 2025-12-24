@@ -515,6 +515,7 @@ async function main() {
     { name: 'Drop Stash', value: 'drop-stash' },
     { name: 'List Stashes', value: 'list-stash' },
     { name: 'Advanced Commands', value: 'advanced' },
+    { name: 'Initialize GitHub Repo', value: 'init-github' },
     { name: 'GitHub Integration', value: 'github' },
     { name: 'Explain Diff (AI)', value: 'explain-diff' },
     { name: 'Conflict Resolution (AI)', value: 'conflict-resolution' },
@@ -724,6 +725,38 @@ async function main() {
   if (cmd === 'github') {
     await githubMenu();
     return main();
+  }
+  if (cmd === 'init-github') {
+    await initGitHubRepo();
+    return main();
+  }
+  async function initGitHubRepo() {
+    const { user, repo } = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'user',
+        message: 'GitHub username or org:',
+        default: 'theKennethy'
+      },
+      {
+        type: 'input',
+        name: 'repo',
+        message: 'Repository name:',
+        default: 'cli'
+      }
+    ]);
+    const remote = `https://github.com/${user}/${repo}.git`;
+    try {
+      console.log(chalk.cyan(`Adding remote: ${remote}`));
+      run(`git remote add origin "${remote}"`);
+    } catch (e) {
+      console.log(chalk.yellow('Remote may already exist. Skipping.'));
+    }
+    console.log(chalk.cyan('Renaming branch to main...'));
+    run('git branch -M main');
+    console.log(chalk.cyan('Pushing to origin main...'));
+    run('git push -u origin main');
+    console.log(boxen(chalk.green(`GitHub repo (${user}/${repo}) initialized and pushed!`), {padding: 1, borderColor: 'green'}));
   }
   async function githubMenu() {
     const { token } = await inquirer.prompt([
