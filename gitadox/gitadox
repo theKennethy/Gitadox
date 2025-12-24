@@ -167,50 +167,16 @@ async function aiMerge() {
 
 async function aiPush() {
   const pushRes = run('git push');
-  const prompt = `Explain the result of this git push command for a developer:\n${pushRes}`;
-  const res = await fetch(OLLAMA_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: OLLAMA_MODEL, prompt })
-  });
-  const text = await res.text();
-  let summary = '';
-  for (const line of text.split(/\r?\n/)) {
-    try {
-      if (!line.trim()) continue;
-      const obj = JSON.parse(line);
-      if (obj.response) summary += obj.response;
-    } catch {}
-  }
-  summary = summary.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
-  console.log(boxen(chalk.cyan('AI Push Summary:'), {padding: 1, borderColor: 'cyan'}));
-  console.log(summary || pushRes);
+  console.log(pushRes);
 }
 
 async function aiPull() {
   const pullRes = run('git pull');
-  const prompt = `Explain the result of this git pull command for a developer:\n${pullRes}`;
-  const res = await fetch(OLLAMA_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: OLLAMA_MODEL, prompt })
-  });
-  const text = await res.text();
-  let summary = '';
-  for (const line of text.split(/\r?\n/)) {
-    try {
-      if (!line.trim()) continue;
-      const obj = JSON.parse(line);
-      if (obj.response) summary += obj.response;
-    } catch {}
-  }
-  summary = summary.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
-  console.log(boxen(chalk.cyan('AI Pull Summary:'), {padding: 1, borderColor: 'cyan'}));
-  console.log(summary || pullRes);
+  console.log(pullRes);
 }
 
 async function aiHelp() {
-  const helpText = `Commands available:\n- AI Save (add, commit, pull, push)\n- AI Status\n- AI Log\n- AI Branch\n- AI Merge\n- AI Push\n- AI Pull\n- Exit`;
+  const helpText = `Commands available:\n- AI Save (add, commit, pull, push)\n- AI Status\n- AI Log\n- AI Branch\n- AI Merge\n- Push\n- Pull\n- Exit`;
   const prompt = `Format this help text for a developer-friendly CLI:\n${helpText}`;
   const res = await fetch(OLLAMA_URL, {
     method: 'POST',
@@ -286,8 +252,8 @@ async function main() {
     { name: 'AI Branch', value: 'branch' },
     { name: 'AI Create Branch (AI-named)', value: 'ai-create-branch' },
     { name: 'AI Merge', value: 'merge' },
-    { name: 'AI Push', value: 'push' },
-    { name: 'AI Pull', value: 'pull' },
+    { name: 'Push', value: 'push' },
+    { name: 'Pull', value: 'pull' },
     { name: 'AI Help', value: 'help' },
     { name: 'Exit', value: 'exit' }
   ];
