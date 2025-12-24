@@ -533,32 +533,94 @@ async function main() {
     if (summary) console.log('\nAI:', summary);
   }
   async function advancedCommands() {
+    const advChoices = [
+      { name: 'Checkout', value: 'checkout' },
+      { name: 'Cherry-pick', value: 'cherry-pick' },
+      { name: 'Rebase', value: 'rebase' },
+      { name: 'Reset', value: 'reset' },
+      { name: 'Tag', value: 'tag' },
+      { name: 'Remote', value: 'remote' },
+      { name: 'Diff', value: 'diff' },
+      { name: 'Show', value: 'show' },
+      { name: 'Revert', value: 'revert' },
+      { name: 'Bisect', value: 'bisect' },
+      { name: 'Blame', value: 'blame' },
+      { name: 'Fetch', value: 'fetch' },
+      { name: 'Config', value: 'config' },
+      { name: 'Clean', value: 'clean' },
+      { name: 'Archive', value: 'archive' },
+      { name: 'Describe', value: 'describe' },
+      { name: 'Reflog', value: 'reflog' },
+      { name: 'Shortlog', value: 'shortlog' },
+      { name: 'Notes', value: 'notes' },
+      { name: 'Grep', value: 'grep' },
+      { name: 'Submodule', value: 'submodule' },
+      { name: 'Worktree', value: 'worktree' },
+      { name: 'Cancel', value: 'cancel' }
+    ];
     const { adv } = await inquirer.prompt([
       {
         type: 'list',
         name: 'adv',
         message: 'Advanced Git Command:',
-        choices: [
-          { name: 'Cherry-pick', value: 'cherry-pick' },
-          { name: 'Rebase', value: 'rebase' },
-          { name: 'Tag', value: 'tag' },
-          { name: 'Cancel', value: 'cancel' }
-        ]
+        choices: advChoices
       }
     ]);
-    if (adv === 'cherry-pick') {
-      const { hash } = await inquirer.prompt([{ type: 'input', name: 'hash', message: 'Commit hash to cherry-pick:' }]);
-      const res = run(`git cherry-pick ${hash}`);
-      console.log(res);
-    } else if (adv === 'rebase') {
-      const { branch } = await inquirer.prompt([{ type: 'input', name: 'branch', message: 'Branch to rebase onto:' }]);
-      const res = run(`git rebase ${branch}`);
-      console.log(res);
-    } else if (adv === 'tag') {
-      const { tag } = await inquirer.prompt([{ type: 'input', name: 'tag', message: 'Tag name:' }]);
-      const res = run(`git tag ${tag}`);
-      console.log(res);
+    if (adv === 'cancel') return;
+
+    // Prompt map for each command
+    const prompts = {
+      'checkout': 'Enter branch or commit to checkout:',
+      'cherry-pick': 'Enter commit hash to cherry-pick:',
+      'rebase': 'Enter branch to rebase onto:',
+      'reset': 'Enter commit or mode (e.g., --hard HEAD~1):',
+      'tag': 'Enter tag name (and optionally commit):',
+      'remote': 'Enter remote command (add, remove, set-url, etc.):',
+      'diff': 'Enter diff arguments (e.g., file, branch):',
+      'show': 'Enter object (commit, tag, etc.) to show:',
+      'revert': 'Enter commit hash to revert:',
+      'bisect': 'Enter bisect command (start, good, bad, reset):',
+      'blame': 'Enter file to blame:',
+      'fetch': 'Enter remote (or leave blank for default):',
+      'config': 'Enter config key (and value if setting):',
+      'clean': 'Enter clean options (e.g., -fd):',
+      'archive': 'Enter archive options:',
+      'describe': 'Enter describe options:',
+      'reflog': 'Enter reflog options:',
+      'shortlog': 'Enter shortlog options:',
+      'notes': 'Enter notes command:',
+      'grep': 'Enter pattern to grep:',
+      'submodule': 'Enter submodule command:',
+      'worktree': 'Enter worktree command:'
+    };
+
+    let arg = '';
+    if (adv !== 'fetch' && adv !== 'cancel') {
+      arg = (await inquirer.prompt([{ type: 'input', name: 'arg', message: prompts[adv] || 'Enter argument:' }])).arg;
+    } else if (adv === 'fetch') {
+      arg = (await inquirer.prompt([{ type: 'input', name: 'arg', message: prompts[adv] }])).arg;
     }
+    const cmd = `git ${adv}${arg ? ' ' + arg : ''}`;
+    const res = run(cmd);
+    console.log(res);
+    // AI explanation
+    const aiPrompt = `Explain in plain English what this git ${adv} command did and what the output means.\n\nCOMMAND: ${cmd}\nOUTPUT:\n${res}`;
+    const aiRes = await fetch(OLLAMA_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: OLLAMA_MODEL, prompt: aiPrompt })
+    });
+    const text = await aiRes.text();
+    let summary = '';
+    for (const line of text.split(/\r?\n/)) {
+      try {
+        if (!line.trim()) continue;
+        const obj = JSON.parse(line);
+        if (obj.response) summary += obj.response;
+      } catch {}
+    }
+    summary = summary.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+    if (summary) console.log('\nAI:', summary);
   }
   // Remove duplicates and empty entries
   const seen = new Set();
