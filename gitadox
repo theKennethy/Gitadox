@@ -1,4 +1,49 @@
 #!/usr/bin/env node
+
+// Undo/Redo state
+let lastAction = null;
+let redoAction = null;
+
+async function undoLastAction() {
+  if (!lastAction) {
+    console.log('Nothing to undo.');
+    return;
+  }
+  if (lastAction.type === 'commit') {
+    // Undo last commit (soft reset)
+    run('git reset --soft HEAD~1');
+    console.log('Last commit undone.');
+    redoAction = lastAction;
+    lastAction = null;
+  } else if (lastAction.type === 'branch-switch') {
+    // Switch back to previous branch
+    run(`git checkout ${lastAction.prevBranch}`);
+    console.log(`Switched back to branch: ${lastAction.prevBranch}`);
+    redoAction = lastAction;
+    lastAction = null;
+  } else {
+    console.log('Nothing to undo.');
+  }
+}
+
+async function redoLastAction() {
+  if (!redoAction) {
+    console.log('Nothing to redo.');
+    return;
+  }
+  if (redoAction.type === 'commit') {
+    // Redo commit (not possible to fully restore, so just notify)
+    console.log('Redo for commit is not supported. Please recommit manually.');
+    redoAction = null;
+  } else if (redoAction.type === 'branch-switch') {
+    // Switch again to the branch
+    run(`git checkout ${redoAction.newBranch}`);
+    console.log(`Switched again to branch: ${redoAction.newBranch}`);
+    redoAction = null;
+  } else {
+    console.log('Nothing to redo.');
+  }
+}
 async function aiExplainAnything() {
   const { explainInput } = await inquirer.prompt([
     { type: 'input', name: 'explainInput', message: chalk.cyan('Paste a git command or error to explain:') }
@@ -252,7 +297,11 @@ async function aiBranch() {
       pageSize: 15
     }
   ]);
+  // Track undo for branch switch
+  const currentBranch = run('git rev-parse --abbrev-ref HEAD');
   const result = run(`git checkout ${branch}`);
+  lastAction = { type: 'branch-switch', prevBranch: currentBranch, newBranch: branch };
+  redoAction = null;
   console.log(boxen(chalk.green(`Switched to branch: ${branch}`), { padding: 1, borderColor: 'green' }));
   console.log(result);
 }
@@ -307,6 +356,9 @@ async function save() {
     const diff = run('git diff --cached');
     const commitMsg = await getAICommitMessage(diff);
     run(`git commit -m "${commitMsg.replace(/"/g, '\"')}"`);
+    // Track undo for commit
+    lastAction = { type: 'commit' };
+    redoAction = null;
     const pullRes = run('git pull --rebase');
     if (/error|conflict/i.test(pullRes)) {
       console.log(chalk.red('Pull failed or merge conflict! Resolve and try again.'));
@@ -348,6 +400,8 @@ async function save() {
 async function main() {
   let choices = [
     { name: 'Save (add, commit, pull, push)', value: 'save' },
+    { name: 'Undo Last Action', value: 'undo' },
+    { name: 'Redo Last Action', value: 'redo' },
     { name: 'Status', value: 'status' },
     { name: 'Log', value: 'log' },
     { name: 'Branch', value: 'branch' },
@@ -380,6 +434,10 @@ async function main() {
   ]);
   if (cmd === 'save') {
     await save();
+  } else if (cmd === 'undo') {
+    await undoLastAction();
+  } else if (cmd === 'redo') {
+    await redoLastAction();
   } else if (cmd === 'status') {
     await aiStatus();
   } else if (cmd === 'log') {
