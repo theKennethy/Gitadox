@@ -144,6 +144,11 @@ async function aiCreateBranch() {
 
 // Usage: ./gitadox or node gitadox
 import inquirer from 'inquirer';
+import path from 'path';
+// Register custom no-wrap list prompt
+const NoWrapListPromptModule = await import('./noWrapListPrompt.js');
+const NoWrapListPrompt = NoWrapListPromptModule.default || NoWrapListPromptModule;
+inquirer.registerPrompt('no-wrap-list', NoWrapListPrompt);
 import chalk from 'chalk';
 import boxen from 'boxen';
 import fetch from 'node-fetch';
@@ -359,7 +364,7 @@ async function main() {
   ];
   const { cmd } = await inquirer.prompt([
     {
-      type: 'list',
+      type: 'no-wrap-list',
       name: 'cmd',
       message: chalk.cyan('What do you want to do?'),
       choices,
@@ -392,7 +397,7 @@ async function main() {
     await aiPull();
   } else if (cmd === 'help') {
     await help();
-  } else {
+  } else if (cmd === 'exit') {
     process.exit(0);
   }
   process.exit(0);
