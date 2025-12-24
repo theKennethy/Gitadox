@@ -5,13 +5,14 @@ A beautiful, AI-powered Git CLI with Ollama integration for commit messages, sum
 ## Features
 
 - **AI Save**: Automatically stages, commits (with AI message), pulls, and pushes all changes.
+- **Undo/Redo**: Undo the last commit or branch switch, and redo the last undoable action.
 - **AI Status**: Shows git status with an AI summary.
 - **AI Log**: Summarizes recent git log with AI.
 - **AI Branch**: Lists branches and suggests naming conventions with AI.
 - **AI Merge**: Merges branches and explains the result with AI.
 - **AI Push/Pull**: Explains push/pull results with AI.
 - **AI Help**: Developer-friendly help via AI.
-- **Menu UI**: Interactive, pretty CLI menu with chalk, boxen, and inquirer.
+- **Menu UI**: Interactive, pretty CLI menu with chalk, boxen, and inquirer. No infinite scroll; arrow keys stop at the ends.
 - **Global CLI**: Run `gitadox` from anywhere after symlinking.
 
 ## Installation
@@ -44,6 +45,8 @@ A beautiful, AI-powered Git CLI with Ollama integration for commit messages, sum
 ## Commands
 
 - **AI Save**: Stages, commits (AI message), pulls, and pushes.
+- **Undo Last Action**: Undo the last commit or branch switch.
+- **Redo Last Action**: Redo the last undone commit or branch switch.
 - **AI Status**: Shows status with AI summary.
 - **AI Log**: Summarizes log with AI.
 - **AI Branch**: Lists branches, AI naming advice.
