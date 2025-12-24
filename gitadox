@@ -532,6 +532,7 @@ async function main() {
     { name: 'Drop Stash', value: 'drop-stash' },
     { name: 'List Stashes', value: 'list-stash' },
     { name: 'Advanced Commands', value: 'advanced' },
+    { name: 'Multi-Repo Management', value: 'multi-repo' },
     { name: 'Initialize GitHub Repo', value: 'init-github' },
     { name: 'GitHub Integration', value: 'github' },
     { name: 'Explain Diff (AI)', value: 'explain-diff' },
@@ -743,6 +744,91 @@ async function main() {
   if (cmd === 'github') {
     await githubMenu();
     return main();
+  }
+  if (cmd === 'multi-repo') {
+    await multiRepoMenu();
+    return main();
+  }
+  async function multiRepoMenu() {
+    const fs = await import('fs');
+    const pathModule = await import('path');
+    const configPath = pathModule.join(process.cwd(), '.gitadox-repos.json');
+    let repos = [];
+    if (fs.existsSync(configPath)) {
+      try {
+        repos = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      } catch {}
+    }
+    const { action } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'action',
+        message: 'Multi-Repo Management:',
+        choices: [
+          { name: 'List Repos', value: 'list' },
+          { name: 'Add Repo', value: 'add' },
+          { name: 'Remove Repo', value: 'remove' },
+          { name: 'Batch Status', value: 'status' },
+          { name: 'Batch Pull', value: 'pull' },
+          { name: 'Batch Push', value: 'push' },
+          { name: 'Back', value: 'back' }
+        ]
+      }
+    ]);
+    if (action === 'list') {
+      if (!repos.length) return console.log(chalk.yellow('No repos managed yet.'));
+      repos.forEach((r, i) => console.log(`${i + 1}. ${r}`));
+    } else if (action === 'add') {
+      const { repoPath } = await inquirer.prompt([
+        { type: 'input', name: 'repoPath', message: 'Path to repo to add:' }
+      ]);
+      if (repoPath && !repos.includes(repoPath)) {
+        repos.push(repoPath);
+        fs.writeFileSync(configPath, JSON.stringify(repos, null, 2));
+        console.log(chalk.green('Repo added.'));
+      }
+    } else if (action === 'remove') {
+      if (!repos.length) return console.log(chalk.yellow('No repos to remove.'));
+      const { toRemove } = await inquirer.prompt([
+        { type: 'list', name: 'toRemove', message: 'Select repo to remove:', choices: repos }
+      ]);
+      repos = repos.filter(r => r !== toRemove);
+      fs.writeFileSync(configPath, JSON.stringify(repos, null, 2));
+      console.log(chalk.green('Repo removed.'));
+    } else if (action === 'status') {
+      if (!repos.length) return console.log(chalk.yellow('No repos to check.'));
+      for (const repo of repos) {
+        console.log(boxen(chalk.cyan(`Status for ${repo}`), {padding: 1, borderColor: 'cyan'}));
+        try {
+          const status = run('git status', { cwd: repo });
+          console.log(status);
+        } catch (e) {
+          console.log(chalk.red('Error:'), e.message);
+        }
+      }
+    } else if (action === 'pull') {
+      if (!repos.length) return console.log(chalk.yellow('No repos to pull.'));
+      for (const repo of repos) {
+        console.log(boxen(chalk.cyan(`Pulling ${repo}`), {padding: 1, borderColor: 'cyan'}));
+        try {
+          const res = run('git pull', { cwd: repo });
+          console.log(res);
+        } catch (e) {
+          console.log(chalk.red('Error:'), e.message);
+        }
+      }
+    } else if (action === 'push') {
+      if (!repos.length) return console.log(chalk.yellow('No repos to push.'));
+      for (const repo of repos) {
+        console.log(boxen(chalk.cyan(`Pushing ${repo}`), {padding: 1, borderColor: 'cyan'}));
+        try {
+          const res = run('git push', { cwd: repo });
+          console.log(res);
+        } catch (e) {
+          console.log(chalk.red('Error:'), e.message);
+        }
+      }
+    }
   }
   if (cmd === 'init-github') {
     await initGitHubRepo();
