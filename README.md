@@ -99,7 +99,7 @@ export async function handler() {
 - Modern, user-friendly CLI menu with no infinite scroll
 
 
-## Advanced Git (Planned)
+## Advanced Git
 
 
 Gitadox now supports a full suite of advanced git commands, each with AI-powered explanations and summaries. After running any advanced command, you’ll see a plain-English summary of what happened and what to do next.
