@@ -1,3 +1,35 @@
+## Advanced Commands
+
+Gitadox supports a full suite of advanced git commands, each with AI-powered explanations and summaries. After running any advanced command, you’ll see a plain-English summary of what happened and what to do next.
+
+**Available Advanced Commands:**
+
+| Command      | Description / Prompt Example                      | AI Explanation |
+|--------------|--------------------------------------------------|:-------------:|
+| checkout     | Switch branches or restore files                 |      Yes      |
+| cherry-pick  | Apply a commit from another branch               |      Yes      |
+| rebase       | Reapply commits on top of another base tip       |      Yes      |
+| reset        | Reset current HEAD to a specified state          |      Yes      |
+| tag          | Create, list, or delete tags                     |      Yes      |
+| remote       | Manage set of tracked repositories               |      Yes      |
+| diff         | Show changes between commits, branches, etc.     |      Yes      |
+| show         | Show various types of objects                    |      Yes      |
+| revert       | Revert some existing commits                     |      Yes      |
+| bisect       | Find the commit that introduced a bug            |      Yes      |
+| blame        | Show what revision and author last modified each line of a file | Yes |
+| fetch        | Download objects and refs from another repo      |      Yes      |
+| config       | Get and set repository or global options         |      Yes      |
+| clean        | Remove untracked files from the working tree     |      Yes      |
+| archive      | Create an archive of files from a named tree     |      Yes      |
+| describe     | Give an object a human-readable name             |      Yes      |
+| reflog       | Show history of HEAD or references               |      Yes      |
+| shortlog     | Summarize git log output                         |      Yes      |
+| notes        | Add or inspect object notes                      |      Yes      |
+| grep         | Print lines matching a pattern                   |      Yes      |
+| submodule    | Initialize, update, or inspect submodules        |      Yes      |
+| worktree     | Manage multiple working trees                    |      Yes      |
+
+All commands are accessible from the "Advanced Commands" menu. Each will prompt for any required arguments and then provide an AI summary of the result.
 # Gitadox
 
 A beautiful, AI-powered Git CLI with Ollama integration for commit messages, summaries, and explanations. All major git commands are available with optional AI assistance and pretty output.
