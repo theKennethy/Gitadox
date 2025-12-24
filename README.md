@@ -63,19 +63,6 @@ A beautiful, AI-powered Git CLI with Ollama integration for commit messages, sum
 - **Plugins**: Run custom plugins from `gitadox-plugins/`.
 - **AI Help**: Friendly help.
 - **Exit**: Quit the CLI.
-## Plugin System
-
-- Add any `.js` file to the `gitadox-plugins/` folder. Each plugin should export a `name`, `description`, and `handler` function. Plugins appear in the menu automatically.
-
-Example plugin:
-```js
-export const name = 'My Plugin';
-export const description = 'Does something cool!';
-export async function handler() {
-  console.log('Hello from My Plugin!');
-}
-```
-
 
 ## Competitor Comparison
 
