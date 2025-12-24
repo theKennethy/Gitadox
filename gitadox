@@ -99,36 +99,115 @@ async function aiNaturalLanguageCommand() {
   console.log(answer);
 }
 async function aiConflictResolution() {
-  // Check for merge conflicts
-  const status = run('git status');
-  if (!/Unmerged paths|both modified|You have unmerged paths|fix conflicts/i.test(status)) {
+  // Interactive AI-powered conflict resolution
+  const conflictedFiles = run('git diff --name-only --diff-filter=U')
+    .split('\n')
+    .map(f => f.trim())
+    .filter(Boolean);
+  if (!conflictedFiles.length) {
     console.log(chalk.green('No merge conflicts detected.'));
     return;
   }
-  // Get the diff of conflicts
-  const diff = run('git diff');
-  if (!diff) {
-    console.log(chalk.yellow('No diff available for conflicts.'));
-    return;
+  for (const file of conflictedFiles) {
+    console.log(boxen(chalk.yellow(`Resolving conflicts in: ${file}`), {padding: 1, borderColor: 'yellow'}));
+    const content = run(`cat "${file}"`);
+    // Find all conflict hunks in the file
+    const hunks = [];
+    let lines = content.split('\n');
+    let hunk = null;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].startsWith('<<<<<<<')) {
+        hunk = { start: i, lines: [lines[i]] };
+      } else if (hunk && lines[i].startsWith('=======')) {
+        hunk.lines.push(lines[i]);
+      } else if (hunk && lines[i].startsWith('>>>>>>>')) {
+        hunk.lines.push(lines[i]);
+        hunk.end = i;
+        hunks.push(hunk);
+        hunk = null;
+      } else if (hunk) {
+        hunk.lines.push(lines[i]);
+      }
+    }
+    for (const h of hunks) {
+      const hunkText = h.lines.join('\n');
+      console.log(boxen(chalk.cyan('Conflict hunk:'), {padding: 1, borderColor: 'cyan'}));
+      console.log(hunkText);
+      const { action } = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'action',
+          message: 'How do you want to resolve this hunk?',
+          choices: [
+            { name: 'Accept current/ours', value: 'ours' },
+            { name: 'Accept incoming/theirs', value: 'theirs' },
+            { name: 'Ask AI for a suggestion', value: 'ai' },
+            { name: 'Edit manually', value: 'edit' },
+            { name: 'Skip for now', value: 'skip' }
+          ]
+        }
+      ]);
+      let replacement = null;
+      if (action === 'ours') {
+        // Take lines between <<<<<<< and =======
+        replacement = h.lines.slice(1, h.lines.findIndex(l => l.startsWith('=======')));
+      } else if (action === 'theirs') {
+        // Take lines between ======= and >>>>>>>
+        const eqIdx = h.lines.findIndex(l => l.startsWith('======='));
+        replacement = h.lines.slice(eqIdx + 1, h.lines.length - 1);
+      } else if (action === 'ai') {
+        // Ask AI for a suggestion
+        const aiPrompt = `You are an expert developer. Given the following git merge conflict hunk, suggest the best resolution and output only the resolved code.\n\n${hunkText}`;
+        const aiRes = await fetch(OLLAMA_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: OLLAMA_MODEL, prompt: aiPrompt })
+        });
+        const text = await aiRes.text();
+        let suggestion = '';
+        for (const line of text.split(/\r?\n/)) {
+          try {
+            if (!line.trim()) continue;
+            const obj = JSON.parse(line);
+            if (obj.response) suggestion += obj.response;
+          } catch {}
+        }
+        suggestion = suggestion.replace(/\n{2,}/g, '\n').trim();
+        console.log(boxen(chalk.green('AI Suggestion:'), {padding: 1, borderColor: 'green'}));
+        console.log(suggestion);
+        const { useAI } = await inquirer.prompt([
+          { type: 'confirm', name: 'useAI', message: 'Use this AI suggestion?', default: true }
+        ]);
+        if (useAI) replacement = suggestion.split('\n');
+      } else if (action === 'edit') {
+        const { manual } = await inquirer.prompt([
+          { type: 'editor', name: 'manual', message: 'Edit the resolved code:' }
+        ]);
+        replacement = manual.split('\n');
+      }
+      if (replacement) {
+        // Replace the hunk in lines
+        lines = [
+          ...lines.slice(0, h.start),
+          ...replacement,
+          ...lines.slice(h.end + 1)
+        ];
+        // Update hunk indices for subsequent hunks
+        const diff = replacement.length - (h.end - h.start + 1);
+        for (const later of hunks) {
+          if (later.start > h.start) {
+            later.start += diff;
+            later.end += diff;
+          }
+        }
+      }
+    }
+    // Write resolved file
+    const fs = await import('fs');
+    fs.writeFileSync(file, lines.join('\n'));
+    console.log(chalk.green(`Conflicts resolved in ${file}.`));
   }
-  const prompt = `The following git status and diff indicate a merge conflict. Suggest step-by-step instructions to resolve the conflict, and summarize what the conflict is about.\n\nGIT STATUS:\n${status}\n\nGIT DIFF:\n${diff}`;
-  const res = await fetch(OLLAMA_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: OLLAMA_MODEL, prompt })
-  });
-  const text = await res.text();
-  let summary = '';
-  for (const line of text.split(/\r?\n/)) {
-    try {
-      if (!line.trim()) continue;
-      const obj = JSON.parse(line);
-      if (obj.response) summary += obj.response;
-    } catch {}
-  }
-  summary = summary.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
-  console.log(boxen(chalk.cyan('AI Conflict Resolution Suggestion:'), {padding: 1, borderColor: 'cyan'}));
-  console.log(summary);
+  console.log(chalk.green('All conflicts processed. You may now add and commit the resolved files.'));
 }
 async function aiExplainDiff() {
   const diff = run('git diff');
