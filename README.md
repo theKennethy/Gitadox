@@ -131,26 +131,6 @@ Gitadox now supports a full suite of advanced git commands, each with AI-powered
 | worktree     | Manage multiple working trees                    |      Yes      |
 
 All commands are accessible from the "Advanced Commands" menu. Each will prompt for any required arguments and then provide an AI summary of the result.
-
-## AI Integration
-
-- Uses [Ollama](https://ollama.com/) (local API, e.g., llama3.1:8b) for:
-  - Commit message generation
-  - Summaries and explanations
-  - Help formatting
-
-## Requirements
-
-- Node.js 18+
-- npm
-- [Ollama](https://ollama.com/) running locally
-
-## License
-
-MIT
-
----
-
 ## Scripts vs Plugins
 
 **Scripts** (in the `scripts/` folder) are for quick, user-defined automation or macros. Each script is a JS file exporting a `name` and a `run` function. Use scripts for simple, personal tasks or to automate repetitive actions. Scripts appear in the menu as `[Script]` entries.
@@ -179,5 +159,25 @@ export async function handler() {
 ```
 
 ---
+## AI Integration
+
+- Uses [Ollama](https://ollama.com/) (local API, e.g., llama3.1:8b) for:
+  - Commit message generation
+  - Summaries and explanations
+  - Help formatting
+
+## Requirements
+
+- Node.js 18+
+- npm
+- [Ollama](https://ollama.com/) running locally
+
+## License
+
+MIT
+
+---
+
+
 
 *Made with ❤️ by theKennethy and GitHub Copilot*
