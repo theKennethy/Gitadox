@@ -76,27 +76,27 @@ export async function handler() {
 }
 ```
 
+
 ## Competitor Comparison
 
-| Feature                        | Gitadox (Yours)         | GitHub CLI (gh)      | Lazygit            | GitUI              | Standard Git CLI   |
-|--------------------------------|-------------------------|----------------------|--------------------|--------------------|--------------------|
-| AI-powered commit messages      | Yes (Ollama)            | No                   | No                 | No                 | No                 |
-| AI explanations/summaries       | Yes (all major actions, stash) | No            | No                 | No                 | No                 |
-| Undo/Redo for actions           | Yes (commit/branch)     | No                   | No                 | No                 | No (manual only)   |
-| Interactive menu UI             | Yes (Inquirer, Chalk)   | No (command-based)   | Yes (TUI)          | Yes (TUI)          | No                 |
-| Pretty output/colors            | Yes                     | Yes                  | Yes                | Yes                | Minimal            |
-| Stash support                   | Yes + AI explanations   | Yes                  | Yes                | Yes                | Yes                |
-| Advanced git support            | Yes (core + menu, AI)   | Yes                  | Yes                | Yes                | Yes                |
-| Extensible/plugins              | Yes (plugin folder)     | No                   | No                 | No                 | No                 |
-| Cross-platform                  | Yes                     | Yes                  | Yes                | Yes                | Yes                |
-| Easy install                    | Yes (npm, symlink)      | Yes (binary, brew)   | Yes (binary, brew) | Yes (binary, brew) | Yes                |
-| Community/Support               | New                     | Large                | Growing            | Growing            | Large              |
+| Tool             | AI Features         | Usability                | Extensibility         | Advanced Git Support      | Unique Differentiators                |
+|------------------|--------------------|--------------------------|-----------------------|--------------------------|---------------------------------------|
+| **Gitadox**      | Yes (Ollama, all major actions, commit, stash, merge, etc.) | High (AI prompts, guided menu, Undo/Redo, no infinite scroll) | High (plugin system, JS plugins) | Good (core + advanced via menu, AI explanations) | AI-driven, plugin support, Undo/Redo, modern menu |
+| GitHub CLI (gh)  | No                 | High (GitHub-focused, intuitive commands) | Moderate (extensions/plugins) | Good (esp. for GitHub workflows)      | Deep GitHub integration, PR/issues   |
+| Lazygit          | No                 | Very High (TUI, keyboard-driven, fast) | Low (configurable, not extensible) | Good (visualizes branches, stashes)   | Fast TUI, real-time status, easy undo|
+| GitUI            | No                 | High (TUI, mouse/keyboard, clean UI) | Low (configurable, not extensible) | Good (interactive rebase, stash, etc.)| Clean UI, performance, cross-platform|
+| Standard Git CLI | No                 | Moderate (powerful, steep learning curve) | High (scripts, aliases, hooks) | Excellent (full git feature set)      | Ubiquitous, scriptable, most control |
 
-**Key Differentiators for Gitadox:**
-- AI-powered explanations for stash, commit, and more
+**Where Gitadox stands out:**
+- AI-powered explanations, commit messages, and automation
 - Undo/Redo for common git actions
 - Plugin/extensibility system
-- Modern, user-friendly CLI menu with no infinite scroll
+- Modern, user-friendly CLI menu (no infinite scroll)
+
+**Where others excel:**
+- Lazygit/GitUI: Fast, visual TUI workflows
+- GitHub CLI: Deep GitHub integration (PRs, issues)
+- Standard Git: Most powerful, scriptable, and universal
 
 
 ## Advanced Git

@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+import * as github from './github.js';
+
+
 // Undo/Redo state
 let lastAction = null;
 let redoAction = null;
@@ -512,6 +515,7 @@ async function main() {
     { name: 'Drop Stash', value: 'drop-stash' },
     { name: 'List Stashes', value: 'list-stash' },
     { name: 'Advanced Commands', value: 'advanced' },
+    { name: 'GitHub Integration', value: 'github' },
     { name: 'Explain Diff (AI)', value: 'explain-diff' },
     { name: 'Conflict Resolution (AI)', value: 'conflict-resolution' },
     { name: 'Natural Language Command (AI)', value: 'nl-command' },
@@ -717,6 +721,83 @@ async function main() {
       pageSize: 10
     }
   ]);
+  if (cmd === 'github') {
+    await githubMenu();
+    return main();
+  }
+  async function githubMenu() {
+    const { token } = await inquirer.prompt([
+      {
+        type: 'password',
+        name: 'token',
+        message: 'Enter your GitHub Personal Access Token:',
+        mask: '*'
+      }
+    ]);
+    let user;
+    try {
+      user = await github.getUser(token);
+    } catch (e) {
+      console.log(chalk.red('GitHub authentication failed.'));
+      return;
+    }
+    const { owner, repo } = await getRepoInfo();
+    const { ghAction } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'ghAction',
+        message: 'GitHub Actions:',
+        choices: [
+          { name: 'List Pull Requests', value: 'listPRs' },
+          { name: 'Create Pull Request', value: 'createPR' },
+          { name: 'List Issues', value: 'listIssues' },
+          { name: 'Create Issue', value: 'createIssue' },
+          { name: 'Back', value: 'back' }
+        ]
+      }
+    ]);
+    if (ghAction === 'listPRs') {
+      const prs = await github.listPullRequests(owner, repo, token);
+      if (!prs.length) return console.log(chalk.yellow('No pull requests found.'));
+      prs.forEach(pr => {
+        console.log(boxen(`#${pr.number}: ${pr.title}\n${pr.html_url}`, {padding: 1, borderColor: 'blue'}));
+      });
+    } else if (ghAction === 'createPR') {
+      const { title, head, base } = await inquirer.prompt([
+        { type: 'input', name: 'title', message: 'PR title:' },
+        { type: 'input', name: 'head', message: 'Source branch (head):' },
+        { type: 'input', name: 'base', message: 'Target branch (base):' }
+      ]);
+      const pr = await github.createPullRequest(owner, repo, title, head, base, token);
+      console.log(boxen(`Created PR #${pr.number}: ${pr.title}\n${pr.html_url}`, {padding: 1, borderColor: 'green'}));
+    } else if (ghAction === 'listIssues') {
+      const issues = await github.listIssues(owner, repo, token);
+      if (!issues.length) return console.log(chalk.yellow('No issues found.'));
+      issues.forEach(issue => {
+        console.log(boxen(`#${issue.number}: ${issue.title}\n${issue.html_url}`, {padding: 1, borderColor: 'magenta'}));
+      });
+    } else if (ghAction === 'createIssue') {
+      const { title, body } = await inquirer.prompt([
+        { type: 'input', name: 'title', message: 'Issue title:' },
+        { type: 'input', name: 'body', message: 'Issue body:' }
+      ]);
+      const issue = await github.createIssue(owner, repo, title, body, token);
+      console.log(boxen(`Created Issue #${issue.number}: ${issue.title}\n${issue.html_url}`, {padding: 1, borderColor: 'green'}));
+    }
+  }
+
+  async function getRepoInfo() {
+    // Try to get owner/repo from git remote
+    const remote = run('git remote get-url origin');
+    const m = remote.match(/github.com[:/](.+?)\/(.+?)(\.git)?$/);
+    if (m) {
+      return { owner: m[1], repo: m[2].replace(/\.git$/, '') };
+    }
+    return await inquirer.prompt([
+      { type: 'input', name: 'owner', message: 'GitHub owner/user:' },
+      { type: 'input', name: 'repo', message: 'GitHub repo:' }
+    ]);
+  }
   if (cmd === 'save') {
     await save();
   } else if (cmd === 'undo') {
