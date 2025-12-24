@@ -1,4 +1,116 @@
 #!/usr/bin/env node
+async function aiExplainAnything() {
+  const { explainInput } = await inquirer.prompt([
+    { type: 'input', name: 'explainInput', message: chalk.cyan('Paste a git command or error to explain:') }
+  ]);
+  if (!explainInput || !explainInput.trim()) {
+    console.log(chalk.yellow('No input provided.'));
+    return;
+  }
+  const prompt = `You are an expert git assistant. Explain the following git command or error message in clear, plain English, and provide actionable advice if relevant.\n\nINPUT:\n${explainInput}`;
+  const res = await fetch(OLLAMA_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: OLLAMA_MODEL, prompt })
+  });
+  const text = await res.text();
+  let answer = '';
+  for (const line of text.split(/\r?\n/)) {
+    try {
+      if (!line.trim()) continue;
+      const obj = JSON.parse(line);
+      if (obj.response) answer += obj.response;
+    } catch {}
+  }
+  answer = answer.replace(/\n{2,}/g, '\n').trim();
+  console.log(boxen(chalk.cyan('AI Explanation:'), {padding: 1, borderColor: 'cyan'}));
+  console.log(answer);
+}
+async function aiNaturalLanguageCommand() {
+  const { nlcmd } = await inquirer.prompt([
+    { type: 'input', name: 'nlcmd', message: chalk.cyan('Describe what you want to do (in plain English):') }
+  ]);
+  if (!nlcmd || !nlcmd.trim()) {
+    console.log(chalk.yellow('No command entered.'));
+    return;
+  }
+  const prompt = `You are an expert git CLI assistant. The user typed: "${nlcmd}".\n\n1. Suggest the exact git command(s) to accomplish this.\n2. Briefly explain what each command does.\n3. If the request is ambiguous, ask for clarification.\n\nFormat:\nCOMMAND: <git command>\nEXPLANATION: <explanation>\n`;
+  const res = await fetch(OLLAMA_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: OLLAMA_MODEL, prompt })
+  });
+  const text = await res.text();
+  let answer = '';
+  for (const line of text.split(/\r?\n/)) {
+    try {
+      if (!line.trim()) continue;
+      const obj = JSON.parse(line);
+      if (obj.response) answer += obj.response;
+    } catch {}
+  }
+  answer = answer.replace(/\n{2,}/g, '\n').trim();
+  console.log(boxen(chalk.cyan('AI Command Suggestion:'), {padding: 1, borderColor: 'cyan'}));
+  console.log(answer);
+}
+async function aiConflictResolution() {
+  // Check for merge conflicts
+  const status = run('git status');
+  if (!/Unmerged paths|both modified|You have unmerged paths|fix conflicts/i.test(status)) {
+    console.log(chalk.green('No merge conflicts detected.'));
+    return;
+  }
+  // Get the diff of conflicts
+  const diff = run('git diff');
+  if (!diff) {
+    console.log(chalk.yellow('No diff available for conflicts.'));
+    return;
+  }
+  const prompt = `The following git status and diff indicate a merge conflict. Suggest step-by-step instructions to resolve the conflict, and summarize what the conflict is about.\n\nGIT STATUS:\n${status}\n\nGIT DIFF:\n${diff}`;
+  const res = await fetch(OLLAMA_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: OLLAMA_MODEL, prompt })
+  });
+  const text = await res.text();
+  let summary = '';
+  for (const line of text.split(/\r?\n/)) {
+    try {
+      if (!line.trim()) continue;
+      const obj = JSON.parse(line);
+      if (obj.response) summary += obj.response;
+    } catch {}
+  }
+  summary = summary.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+  console.log(boxen(chalk.cyan('AI Conflict Resolution Suggestion:'), {padding: 1, borderColor: 'cyan'}));
+  console.log(summary);
+}
+async function aiExplainDiff() {
+  const diff = run('git diff');
+  if (!diff) {
+    console.log(chalk.yellow('No changes to explain.'));
+    return;
+  }
+  const prompt = `Explain the following git diff in plain English for a developer. Summarize what was changed, which files were affected, and the overall impact.\n${diff}`;
+  const res = await fetch(OLLAMA_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: OLLAMA_MODEL, prompt })
+  });
+  const text = await res.text();
+  let summary = '';
+  for (const line of text.split(/\r?\n/)) {
+    try {
+      if (!line.trim()) continue;
+      const obj = JSON.parse(line);
+      if (obj.response) summary += obj.response;
+    } catch {}
+  }
+  summary = summary.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+  console.log(boxen(chalk.cyan('AI Diff Explanation:'), {padding: 1, borderColor: 'cyan'}));
+  console.log(summary || diff);
+}
+
 
 async function aiCreateBranch() {
   // Get current status or context for branch naming
@@ -175,26 +287,10 @@ async function aiPull() {
   console.log(pullRes);
 }
 
-async function aiHelp() {
-  const helpText = `Commands available:\n- AI Save (add, commit, pull, push)\n- AI Status\n- AI Log\n- AI Branch\n- AI Merge\n- Push\n- Pull\n- Exit`;
-  const prompt = `Format this help text for a developer-friendly CLI:\n${helpText}`;
-  const res = await fetch(OLLAMA_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: OLLAMA_MODEL, prompt })
-  });
-  const text = await res.text();
-  let summary = '';
-  for (const line of text.split(/\r?\n/)) {
-    try {
-      if (!line.trim()) continue;
-      const obj = JSON.parse(line);
-      if (obj.response) summary += obj.response;
-    } catch {}
-  }
-  summary = summary.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
-  console.log(boxen(chalk.cyan('AI Help:'), {padding: 1, borderColor: 'cyan'}));
-  console.log(summary || helpText);
+async function help() {
+  const helpText = `Commands available:\n\n- Save (add, commit, pull, push): Stage, commit, pull, and push changes with AI commit message\n- Status: Show git status\n- Log: Show git log\n- Branch: List branches\n- Create Branch (AI-named): Create a new branch with an AI-generated name\n- Merge: Merge branches\n- Push: git push\n- Pull: git pull\n- Help: Show this help\n- Exit: Exit the CLI`;
+  console.log(boxen(chalk.cyan('Help'), {padding: 1, borderColor: 'cyan'}));
+  console.log(helpText);
 }
 
 async function save() {
@@ -246,15 +342,19 @@ async function save() {
 
 async function main() {
   const choices = [
-    { name: 'AI Save (add, commit, pull, push)', value: 'save' },
-    { name: 'AI Status', value: 'status' },
-    { name: 'AI Log', value: 'log' },
-    { name: 'AI Branch', value: 'branch' },
-    { name: 'AI Create Branch (AI-named)', value: 'ai-create-branch' },
-    { name: 'AI Merge', value: 'merge' },
+    { name: 'Save (add, commit, pull, push)', value: 'save' },
+    { name: 'Status', value: 'status' },
+    { name: 'Log', value: 'log' },
+    { name: 'Branch', value: 'branch' },
+    { name: 'Create Branch (AI-named)', value: 'ai-create-branch' },
+    { name: 'Merge', value: 'merge' },
+    { name: 'Explain Diff (AI)', value: 'explain-diff' },
+    { name: 'Conflict Resolution (AI)', value: 'conflict-resolution' },
+    { name: 'Natural Language Command (AI)', value: 'nl-command' },
+    { name: 'Explain Command/Error (AI)', value: 'explain-anything' },
     { name: 'Push', value: 'push' },
     { name: 'Pull', value: 'pull' },
-    { name: 'AI Help', value: 'help' },
+    { name: 'Help', value: 'help' },
     { name: 'Exit', value: 'exit' }
   ];
   const { cmd } = await inquirer.prompt([
@@ -278,12 +378,20 @@ async function main() {
     await aiCreateBranch();
   } else if (cmd === 'merge') {
     await aiMerge();
+  } else if (cmd === 'explain-diff') {
+    await aiExplainDiff();
+  } else if (cmd === 'conflict-resolution') {
+    await aiConflictResolution();
+  } else if (cmd === 'nl-command') {
+    await aiNaturalLanguageCommand();
+  } else if (cmd === 'explain-anything') {
+    await aiExplainAnything();
   } else if (cmd === 'push') {
     await aiPush();
   } else if (cmd === 'pull') {
     await aiPull();
   } else if (cmd === 'help') {
-    await aiHelp();
+    await help();
   } else {
     process.exit(0);
   }
