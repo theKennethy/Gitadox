@@ -734,7 +734,7 @@ async function main() {
   });
   const { cmd } = await inquirer.prompt([
     {
-      type: 'no-wrap-list',
+      type: 'list',
       name: 'cmd',
       message: chalk.cyan('What do you want to do?'),
       choices,
