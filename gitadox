@@ -729,17 +729,17 @@ async function main() {
   }
   // Remove duplicates and empty entries
   const seen = new Set();
-  choices = choices.filter(c => {
+  const filteredChoices = choices.filter(c => {
     if (!c || !c.value || seen.has(c.value)) return false;
     seen.add(c.value);
     return true;
   });
   const { cmd } = await inquirer.prompt([
     {
-      type: 'list',
+      type: 'no-wrap-list',
       name: 'cmd',
       message: chalk.cyan('What do you want to do?'),
-      choices,
+      choices: filteredChoices,
       pageSize: 10
     }
   ]);
