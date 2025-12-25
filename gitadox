@@ -738,7 +738,7 @@ async function main() {
     {
       type: 'no-wrap-list',
       name: 'cmd',
-      message: chalk.cyan('What do you want to do?'),
+      message: chalk.cyan('Select an action:'),
       choices: filteredChoices,
       pageSize: 10
     }
