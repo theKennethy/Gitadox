@@ -167,20 +167,6 @@ export const description = 'Does something cool!';
 export async function handler() {
   console.log('Hello from My Plugin!');
 }
-```
-## Multi-Repo Management
-
-Gitadox lets you manage multiple git repositories at once from a single menu.
-
-- **Add Repo**: Add the path to any local git repository you want to manage.
-- **Remove Repo**: Remove a repo from the managed list.
-- **List Repos**: See all currently managed repos.
-- **Batch Status**: Run `git status` in all managed repos and see the results.
-- **Batch Pull**: Run `git pull` in all managed repos.
-- **Batch Push**: Run `git push` in all managed repos.
-
-To use, select "Multi-Repo Management" from the main menu. You can add, remove, and list repos, and perform batch operations across all of them. Managed repo paths are stored in `.gitadox-repos.json` in your project directory.
-
 ---
 ## AI Integration
 
