@@ -274,14 +274,11 @@ async function aiCreateBranch() {
 // Usage: ./gitadox or node gitadox
 import inquirer from 'inquirer';
 import path from 'path';
-// Register custom no-wrap list prompt
-const NoWrapListPromptModule = await import('./noWrapListPrompt.js');
-const NoWrapListPrompt = NoWrapListPromptModule.default || NoWrapListPromptModule;
-inquirer.registerPrompt('no-wrap-list', NoWrapListPrompt);
 import chalk from 'chalk';
 import boxen from 'boxen';
 import fetch from 'node-fetch';
 import { execSync, exec } from 'child_process';
+import { minimalPrompt } from './minimalPrompt.js';
 
 const OLLAMA_URL = 'http://localhost:11434/api/generate';
 const OLLAMA_MODEL = 'llama3.1:8b';
@@ -734,26 +731,19 @@ async function main() {
     seen.add(c.value);
     return true;
   });
-  const { cmd } = await inquirer.prompt([
-    {
-      type: 'no-wrap-list',
-      name: 'cmd',
-      message: chalk.cyan('Select an action:'),
-      choices: filteredChoices,
-      pageSize: 10,
-      loop: false,
-      transformer: (input, answers, flags) => flags.isFinal ? chalk.cyan(input) : ''
+  const cmd = await minimalPrompt(filteredChoices.map(c => c.name), 'Select an action:');
+  // Find the value for the selected name
+  const selectedChoice = filteredChoices.find(c => c.name === cmd);
+  const cmdValue = selectedChoice ? selectedChoice.value : cmd;
+    if (cmdValue === 'github') {
+      await githubMenu();
+      return main();
     }
-  ]);
-  if (cmd === 'github') {
-    await githubMenu();
-    return main();
-  }
-  if (cmd === 'check-updates') {
-    await checkForUpdates();
-    return main();
-  }
-  async function checkForUpdates() {
+    if (cmdValue === 'check-updates') {
+      await checkForUpdates();
+      return main();
+    }
+    async function checkForUpdates() {
     const fs = await import('fs');
     const pathModule = await import('path');
     const pkgPath = pathModule.join(process.cwd(), 'package.json');
@@ -782,10 +772,10 @@ async function main() {
   }
   // ...existing code...
   // ...existing code...
-  if (cmd === 'init-github') {
-    await initGitHubRepo();
-    return main();
-  }
+    if (cmdValue === 'init-github') {
+      await initGitHubRepo();
+      return main();
+    }
   async function initGitHubRepo() {
     const { token } = await inquirer.prompt([
       {
@@ -933,57 +923,57 @@ async function main() {
       { type: 'input', name: 'repo', message: 'GitHub repo:' }
     ]);
   }
-  if (cmd === 'save') {
-    await save();
-  } else if (cmd === 'undo') {
-    await undoLastAction();
-  } else if (cmd === 'redo') {
-    await redoLastAction();
-  } else if (cmd === 'status') {
-    await aiStatus();
-  } else if (cmd === 'log') {
-    await aiLog();
-  } else if (cmd === 'branch') {
-    await aiBranch();
-  } else if (cmd === 'ai-create-branch') {
-    await aiCreateBranch();
-  } else if (cmd === 'merge') {
-    await aiMerge();
-  } else if (cmd === 'stash') {
-    await stash();
-  } else if (cmd === 'apply-stash') {
-    await applyStash();
-  } else if (cmd === 'drop-stash') {
-    await dropStash();
-  } else if (cmd === 'list-stash') {
-    await listStash();
-  } else if (cmd === 'advanced') {
-    await advancedCommands();
-  } else if (cmd === 'explain-diff') {
-    await aiExplainDiff();
-  } else if (cmd === 'conflict-resolution') {
-    await aiConflictResolution();
-  } else if (cmd === 'nl-command') {
-    await aiNaturalLanguageCommand();
-  } else if (cmd === 'explain-anything') {
-    await aiExplainAnything();
-  } else if (cmd === 'push') {
-    await aiPush();
-  } else if (cmd === 'pull') {
-    await aiPull();
-  } else if (cmd && cmd.startsWith('plugin:')) {
-    const file = cmd.replace('plugin:', '');
-    const plugin = plugins.find(p => p.file === file);
-    if (plugin) await plugin.handler();
-  } else if (cmd && cmd.startsWith('script:')) {
-    const file = cmd.replace('script:', '');
-    const script = scripts.find(s => s.file === file);
-    if (script) await script.run();
-  } else if (cmd === 'help') {
-    await help();
-  } else if (cmd === 'exit') {
-    process.exit(0);
-  }
+    if (cmdValue === 'save') {
+      await save();
+    } else if (cmdValue === 'undo') {
+      await undoLastAction();
+    } else if (cmdValue === 'redo') {
+      await redoLastAction();
+    } else if (cmdValue === 'status') {
+      await aiStatus();
+    } else if (cmdValue === 'log') {
+      await aiLog();
+    } else if (cmdValue === 'branch') {
+      await aiBranch();
+    } else if (cmdValue === 'ai-create-branch') {
+      await aiCreateBranch();
+    } else if (cmdValue === 'merge') {
+      await aiMerge();
+    } else if (cmdValue === 'stash') {
+      await stash();
+    } else if (cmdValue === 'apply-stash') {
+      await applyStash();
+    } else if (cmdValue === 'drop-stash') {
+      await dropStash();
+    } else if (cmdValue === 'list-stash') {
+      await listStash();
+    } else if (cmdValue === 'advanced') {
+      await advancedCommands();
+    } else if (cmdValue === 'explain-diff') {
+      await aiExplainDiff();
+    } else if (cmdValue === 'conflict-resolution') {
+      await aiConflictResolution();
+    } else if (cmdValue === 'nl-command') {
+      await aiNaturalLanguageCommand();
+    } else if (cmdValue === 'explain-anything') {
+      await aiExplainAnything();
+    } else if (cmdValue === 'push') {
+      await aiPush();
+    } else if (cmdValue === 'pull') {
+      await aiPull();
+    } else if (cmdValue && cmdValue.startsWith('plugin:')) {
+      const file = cmdValue.replace('plugin:', '');
+      const plugin = plugins.find(p => p.file === file);
+      if (plugin) await plugin.handler();
+    } else if (cmdValue && cmdValue.startsWith('script:')) {
+      const file = cmdValue.replace('script:', '');
+      const script = scripts.find(s => s.file === file);
+      if (script) await script.run();
+    } else if (cmdValue === 'help') {
+      await help();
+    } else if (cmdValue === 'exit') {
+      process.exit(0);
+    }
   process.exit(0);
 }
 
