@@ -740,7 +740,9 @@ async function main() {
       name: 'cmd',
       message: chalk.cyan('Select an action:'),
       choices: filteredChoices,
-      pageSize: 10
+      pageSize: 10,
+      loop: false,
+      transformer: (input, answers, flags) => flags.isFinal ? chalk.cyan(input) : ''
     }
   ]);
   if (cmd === 'github') {
