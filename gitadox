@@ -663,7 +663,7 @@ async function main() {
       {
         type: 'no-wrap-list',
         name: 'cmd',
-        message: chalk.cyan('Select an action:'),
+        message: chalk.cyan('🚀 Gitadox Menu — Choose your next move:'),
         choices: filteredChoices,
         pageSize: 10,
         loop: false
