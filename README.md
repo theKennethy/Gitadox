@@ -135,6 +135,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [chalk](https://github.com/chalk/chalk) - Terminal string styling
 - [inquirer](https://github.com/SBoudrias/Inquirer.js) - A collection of common interactive command line user interfaces
 - [node-fetch](https://github.com/node-fetch/node-fetch) - A light-weight module that brings window.fetch to Node.js
-
-Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted): 2025-12-25 20:58:54
-Current User's Login: theKennethy
