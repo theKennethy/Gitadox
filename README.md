@@ -62,52 +62,112 @@ gitadox --help
 
 ### Common Commands
 
-- List pull requests for a repository:
-  ```bash
-  gitadox prs <owner> <repo>
-  ```
+- **AI Save**: Stages, commits (AI message), pulls, and pushes.
+- **Undo Last Action**: Undo the last commit or branch switch.
+- **Redo Last Action**: Redo the last undone commit or branch switch.
+- **AI Status**: Shows status with AI summary.
+- **AI Log**: Summarizes log with AI.
+- **AI Branch**: Lists branches, AI naming advice.
+- **AI Merge**: Merges and explains.
+- **AI Push/Pull**: Explains results.
+- **Stash**: Save your changes temporarily (AI explained).
+- **Apply Stash**: Restore stashed changes (AI explained).
+- **Drop Stash**: Delete a stash (AI explained).
+- **List Stashes**: View all stashes (AI explained).
+- **Advanced Commands**: Cherry-pick, rebase, tag, etc.
+- **Plugins**: Run custom plugins from `gitadox-plugins/`.
+- **AI Help**: Friendly help.
+- **Exit**: Quit the CLI.
 
-- Create a new issue:
-  ```bash
-  gitadox issue <owner> <repo> "Issue Title" "Issue Description"
-  ```
+## Competitor Comparison
 
-- Run a custom script:
-  ```bash
-  gitadox run <script-name>
-  ```
 
-### Configuration
+| Feature                        | Gitadox (Yours)         | GitHub CLI (gh)      | Lazygit            | GitUI              | Standard Git CLI   |
+|--------------------------------|-------------------------|----------------------|--------------------|--------------------|--------------------|
+| AI-powered commit messages      | Yes (Ollama)            | No                   | No                 | No                 | No                 |
+| AI explanations/summaries       | Yes (all major actions) | No                   | No                 | No                 | No                 |
+| Guided merge conflict (AI)      | Yes                     | No                   | Partial (manual)   | Partial (manual)   | Manual             |
+| Undo/Redo for actions           | Yes (commit/branch)     | No                   | No                 | No                 | No (manual only)   |
+| Plugin/extensibility system     | Yes (JS plugins)        | Moderate (extensions)| No                 | No                 | Yes (scripts/hooks)|
+| Scripting support               | Yes (scripts folder)    | No                   | No                 | No                 | Yes (scripts/hooks)|
+| Modern menu UI (no wrap)        | Yes                     | No                   | Yes (TUI)          | Yes (TUI)          | No                 |
+| Stash support                   | Yes + AI                | Yes                  | Yes                | Yes                | Yes                |
+| Advanced git commands           | Yes + AI                | Yes                  | Yes                | Yes                | Yes                |
+| GitHub integration (PR/issues)  | Yes                     | Yes                  | No                 | No                 | No                 |
+| GitHub repo creation            | Yes                     | Yes                  | No                 | No                 | No                 |
+| Public/private repo creation    | Yes                     | Yes                  | No                 | No                 | No                 |
+| Multi-repo management           | Yes (batch ops)         | No                   | No                 | No                 | No                 |
+| Check for updates               | Yes (menu)              | No                   | No                 | No                 | No                 |
+| Cross-platform                  | Yes                     | Yes                  | Yes                | Yes                | Yes                |
+| Easy install                    | Yes                     | Yes                  | Yes                | Yes                | Yes                |
+| Community/support               | New                     | Large                | Growing            | Growing            | Large              |
+| TUI/visual workflow             | No (menu)               | No                   | Yes                | Yes                | No                 |
+| Scripting/automation            | Yes (scripts/plugins)   | Yes                  | No                 | No                 | Yes                |
 
-Gitadox requires a GitHub personal access token for GitHub integration. Set it as an environment variable:
+**Where Gitadox stands out:**
+- AI-powered explanations, commit messages, and automation
+- Undo/Redo for common git actions
+- Plugin/extensibility system and scripting
+- Multi-repo management with batch operations
+- Modern, user-friendly CLI menu (no infinite scroll)
+- Built-in update checker
 
-```bash
-export GITHUB_TOKEN=your_token_here
-```
+**Where Gitadox stands out:**
+- AI-powered explanations, commit messages, and automation
+- Undo/Redo for common git actions
+- Plugin/extensibility system
+- Modern, user-friendly CLI menu (no infinite scroll)
 
-For Ollama integration, ensure Ollama is running and configured.
+**Where others excel:**
+- Lazygit/GitUI: Fast, visual TUI workflows
+- GitHub CLI: Deep GitHub integration (PRs, issues)
+- Standard Git: Most powerful, scriptable, and universal
 
-## Plugins
 
-Gitadox supports plugins to add new features. Plugins are located in the `gitadox-plugins/` directory.
+## Advanced Git
 
-Example plugin structure (see `gitadox-plugins/sample.js`):
 
-```javascript
-export const name = 'Sample Plugin';
-export const description = 'A sample plugin for Gitadox.';
-export async function handler() {
-  console.log('Hello from the sample plugin!');
-}
-```
+Gitadox now supports a full suite of advanced git commands, each with AI-powered explanations and summaries. After running any advanced command, you’ll see a plain-English summary of what happened and what to do next.
 
-## Scripts
+| Command      | Description / Prompt Example                      | AI Explanation |
+|--------------|--------------------------------------------------|:-------------:|
+| stash        | Save, apply, drop, and list stashes              |      Yes      |
+| checkout     | Switch branches or restore files                 |      Yes      |
+| cherry-pick  | Apply a commit from another branch               |      Yes      |
+| rebase       | Reapply commits on top of another base tip       |      Yes      |
+| reset        | Reset current HEAD to a specified state          |      Yes      |
+| tag          | Create, list, or delete tags                     |      Yes      |
+| remote       | Manage set of tracked repositories               |      Yes      |
+| diff         | Show changes between commits, branches, etc.     |      Yes      |
+| show         | Show various types of objects                    |      Yes      |
+| revert       | Revert some existing commits                     |      Yes      |
+| bisect       | Find the commit that introduced a bug            |      Yes      |
+| blame        | Show what revision and author last modified each line of a file | Yes |
+| fetch        | Download objects and refs from another repo      |      Yes      |
+| config       | Get and set repository or global options         |      Yes      |
+| clean        | Remove untracked files from the working tree     |      Yes      |
+| archive      | Create an archive of files from a named tree     |      Yes      |
+| describe     | Give an object a human-readable name             |      Yes      |
+| reflog       | Show history of HEAD or references               |      Yes      |
+| shortlog     | Summarize git log output                         |      Yes      |
+| notes        | Add or inspect object notes                      |      Yes      |
+| grep         | Print lines matching a pattern                   |      Yes      |
+| submodule    | Initialize, update, or inspect submodules        |      Yes      |
+| worktree     | Manage multiple working trees                    |      Yes      |
 
-Custom scripts can be added to the `scripts/` directory. They follow a similar structure to plugins but use the `run` function.
+All commands are accessible from the "Advanced Commands" menu. Each will prompt for any required arguments and then provide an AI summary of the result.
+## Scripts vs Plugins
 
-Example script (see `scripts/hello.js`):
+**Scripts** (in the `scripts/` folder) are for quick, user-defined automation or macros. Each script is a JS file exporting a `name` and a `run` function. Use scripts for simple, personal tasks or to automate repetitive actions. Scripts appear in the menu as `[Script]` entries.
 
-```javascript
+**Plugins** (in `gitadox-plugins/`) are for advanced, reusable, or shareable CLI extensions. Each plugin exports a `name`, `description`, and a `handler` function. Plugins can add new menu actions and interact more deeply with the CLI. Use plugins for features you want to share or reuse across projects. Plugins appear in the menu as `[Plugin]` entries.
+
+**Summary:**
+- Use scripts for quick, personal automation.
+- Use plugins for advanced, reusable, or shareable CLI extensions.
+
+**Example script (`scripts/hello.js`):**
+```js
 export const name = 'Hello Script';
 export const description = 'Prints Hello from a user script!';
 export async function run() {
