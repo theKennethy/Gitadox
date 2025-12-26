@@ -15,23 +15,6 @@ Gitadox is a command-line interface tool that enhances your Git experience with 
 - **Plugin System**: Extend functionality with custom plugins.
 - **Script Support**: Run custom scripts for advanced workflows.
 
-## Comparison with Other Git CLIs
-
-Here's a table comparing Gitadox with other popular Git CLI tools:
-
-| Tool        | Main Features | Platforms | Language |
-|-------------|---------------|-----------|----------|
-| Gitadox     | AI-powered automation, pretty output, GitHub integration, plugins, scripts | Windows, macOS, Linux | JavaScript |
-| lazygit     | Terminal UI, fast navigation | Windows, macOS, Linux | Go |
-| tig         | Ncurses TUI, browse logs/diffs | Windows, macOS, Linux | C |
-| forgit      | Fuzzy-search git operations | Windows, macOS, Linux | Shell scripts |
-| gitui       | Modern TUI, conflict resolution | Windows, macOS, Linux | Rust |
-| gh (GitHub CLI) | GitHub management & automation | Windows, macOS, Linux | Go |
-| hub         | GitHub CLI extensions | Windows, macOS, Linux | Go |
-| git-extras  | Extra commands, productivity | Windows, macOS, Linux | Shell scripts |
-| git-flow    | Branch/release workflow model | Windows, macOS, Linux | Shell scripts |
-| Oh My Zsh   | Git aliases, prompt customization | Windows, macOS, Linux | Shell scripts |
-
 ## Installation
 
 ### Prerequisites
